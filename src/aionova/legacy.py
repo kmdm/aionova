@@ -89,7 +89,7 @@ class AnovaCookerLegacy:
         elif running is False:
             return 'off'
 
-        job = self.get('current_job') or {}
+        job = self.state.get('current_job') or {}
         return job.get('job_stage')
 
     @property
