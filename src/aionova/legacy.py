@@ -112,8 +112,6 @@ class AnovaCookerLegacy:
         await self._request(data={'alarm_active': False})
 
     async def create_job(self, temperature: Union[int, float], seconds: int):
-        temp_unit_expansion = {'c': 'Celsius', 'f': 'Fahrenheit'}
-
         await self._request('jobs', data={
             'is_running': False,
             'job_id': '',
@@ -124,6 +122,9 @@ class AnovaCookerLegacy:
             'threshold_temp': 40,
             'timer_length': seconds
         })
+
+    async def start_job(self):
+        await self._request(data={'is_running': True})
 
     async def stop_job(self):
         await self._request(data={'is_running': False})
