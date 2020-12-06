@@ -5,7 +5,7 @@ with open('README.md') as f:
 
 setuptools.setup(
     name='aionova',
-    version='0.0.1',
+    version='0.0.2',
     author='Kenny Millington',
     author_email='kenny@kennynet.co.uk',
     description='A simple asyncio based library for communicating with Anova Precision Cookers',
