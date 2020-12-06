@@ -78,7 +78,7 @@ class AnovaCookerLegacy:
 
     @property
     def alarm_active(self) -> Optional[bool]:
-        return self.state.get('alarm_active', default=False)
+        return self.state.get('alarm_active', False)
 
     @property
     def mode(self) -> Optional[str]:
