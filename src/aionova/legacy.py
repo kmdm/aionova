@@ -59,6 +59,7 @@ class AnovaCookerLegacy:
         # 'timer_length': 960
         # }
         self.state = state
+        return state
 
     @property
     def current_temperature(self) -> Optional[Union[int, float]]:
@@ -98,18 +99,22 @@ class AnovaCookerLegacy:
 
     async def set_target_temperature(self, temperature: Union[int, float]):
         await self._request(data={'target_temp': temperature})
+        self.state['target_temp'] = temperature
 
     async def set_temperature_unit(self, unit: str):
         if unit not in ('', 'c', 'f'):
             raise ValueError(f'Invalid unit: {unit}')
 
         await self._request(data={'temp_unit': unit})
+        self.state['temp_unit'] = unit
 
     async def set_speaker_mode(self, mode: bool):
         await self._request(data={'speaker_mode': mode})
+        self.state['speaker_mode'] = mode
 
     async def stop_alarm(self):
         await self._request(data={'alarm_active': False})
+        del self.state['alarm_active']
 
     async def create_job(self, temperature: Union[int, float], seconds: int):
         await self._request('jobs', data={
@@ -125,6 +130,8 @@ class AnovaCookerLegacy:
 
     async def start_job(self):
         await self._request(data={'is_running': True})
+        self.state['is_running'] = True
 
     async def stop_job(self):
         await self._request(data={'is_running': False})
+        self.state['is_running'] = False
