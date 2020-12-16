@@ -1,6 +1,9 @@
 import aiohttp
 
+from aiohttp.client_exceptions import ClientError
 from typing import Optional, Union
+
+from .exceptions import *
 
 API_URL = 'https://api.anovaculinary.com/cookers/{cooker_id}{action}?secret={secret}'
 
@@ -17,21 +20,26 @@ class AnovaCookerLegacy:
 
         url = API_URL.format(cooker_id=self.cooker_id, action=action, secret=self.cooker_secret)
 
-        async with aiohttp.ClientSession() as session:
+        async with aiohttp.ClientSession(trust_env=True) as session:
             if data is not None:
                 req = session.post(url, json=data)
             else:
                 req = session.get(url)
 
-            async with req as response:
-                if 200 != response.status:
-                    raise RuntimeError(f'Cooker request failed: {response.status}')
+            try:
+                async with req as response:
+                    if 401 == response.status:
+                        raise AnovaCookerInvalidIdOrSecretException('Invalid Cooker id or secret')
+                    elif 404 == response.status:
+                        raise AnovaCookerOfflineException('Cooker offline')
+                    elif 200 != response.status:
+                        raise AnovaCookerUpdateFailedException(f'Cooker update failed with status: {response.status}')
 
-                return await response.json(content_type=None)
+                    return await response.json(content_type=None)
+            except ClientError as e:
+                raise AnovaCookerUpdateFailedException(f'API client error: {e}') from e
 
     async def update_state(self) -> dict:
-        state = (await self._request())['status']
-
         # {
         # 'cooker_id': 'anova f56-XXXXXXXXXXX',
         # 'firmware_version': 'ver 2.7.6',
@@ -58,8 +66,8 @@ class AnovaCookerLegacy:
         # 'is_timer_running': False,
         # 'timer_length': 960
         # }
-        self.state = state
-        return state
+        self.state = (await self._request())['status']
+        return self.state
 
     @property
     def current_temperature(self) -> Optional[Union[int, float]]:
